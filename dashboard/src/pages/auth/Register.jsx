@@ -8,7 +8,7 @@ import {
    
 const Register = () => {
     return (
-       <Card color="transparent" shadow={false} className="h-fit m-auto">
+       <Card color="white" shadow={false} className="h-fit m-auto p-4 md:p-6">
         <Typography variant="h4" color="blue-gray">
           Sign Up
         </Typography>
@@ -70,7 +70,7 @@ const Register = () => {
             }
             containerProps={{ className: "-ml-2.5" }}
           />
-          <a href="/dashboard"><Button className="mt-6" fullWidth>
+          <a href="/customers"><Button className="mt-6" fullWidth>
             sign up
           </Button></a>
           <Typography color="gray" className="mt-4 text-center font-normal">

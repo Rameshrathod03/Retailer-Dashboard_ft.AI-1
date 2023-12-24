@@ -7,7 +7,7 @@ import {
    
 const Login = () => {
     return (
-       <Card color="transparent" shadow={false} className="h-fit m-auto">
+       <Card color="white" shadow={false} className="h-fit m-auto p-4 md:p-6">
         <Typography variant="h4" color="blue-gray">
           Sign In
         </Typography>
@@ -41,7 +41,7 @@ const Login = () => {
             />
           </div>
 
-          <a href='/dashboard'><Button className="mt-6" fullWidth>
+          <a href='/customers'><Button className="mt-6" fullWidth>
             sign in
           </Button></a>
           <Typography color="gray" className="mt-4 text-center font-normal">

@@ -40,12 +40,12 @@ const Sidebar = () => {
           </Typography>
         </div>
         <List>
-          <a href='/dashboard'><ListItem>
+          {/* <a href='/dashboard'><ListItem>
             <ListItemPrefix>
               <PresentationChartBarIcon className="h-5 w-5" />
             </ListItemPrefix>
             Dashboard
-          </ListItem></a>
+          </ListItem></a> */}
           <a href='/customers'><ListItem>
             <ListItemPrefix>
               <UserGroupIcon className="h-5 w-5" />

@@ -6,7 +6,7 @@ import UserTable from "./UserTable";
 
 const Customers = () => {
     return(
-        <div>
+        <div className=" overflow-scroll">
             <UserTable />
         </div>
     )

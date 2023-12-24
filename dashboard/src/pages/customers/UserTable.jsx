@@ -15,7 +15,6 @@ import {
     Tabs,
     TabsHeader,
     Tab,
-    Avatar,
     IconButton,
     Tooltip,
   } from "@material-tailwind/react";
@@ -26,53 +25,97 @@ import {
       value: "all",
     },
     {
-      label: "Monitored",
-      value: "monitored",
+      label: "Regular",
+      value: "regular",
     },
     {
-      label: "Unmonitored",
-      value: "unmonitored",
+      label: "New",
+      value: "new",
     },
   ];
-   
-  const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
-   
+  
+  const TABLE_HEAD = ["Customer", "Stats", "Status", "Latest Purchase", "Details"];
+  
   const TABLE_ROWS = [
     {
-      img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-      name: "John Michael",
-      email: "john@creative-tim.com",
-      job: "Manager",
-      org: "Organization",
+      name: "#1623123421",
+      phone: "7981589112",
+      orders: "10",
+      ordervalue: "500",
       online: true,
       date: "23/04/18",
     },
     {
-      img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-      name: "Alexa Liras",
-      email: "alexa@creative-tim.com",
-      job: "Programator",
-      org: "Developer",
+      name: "#1623123421",
+      phone: "9623123421",
+      orders: "16",
+      ordervalue: "850",
       online: false,
       date: "23/04/18",
     },
     {
-      img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-      name: "Laurent Perrier",
-      email: "laurent@creative-tim.com",
-      job: "Executive",
-      org: "Projects",
+      name: "#1213212342",
+      phone: "8623123421",
+      orders: "30",
+      ordervalue: "250",
       online: false,
       date: "19/09/17",
     },
     {
-      img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-      name: "Michael Levi",
-      email: "michael@creative-tim.com",
-      job: "Programator",
-      org: "Developer",
+      name: "#1623123421",
+      phone: "7981589112",
+      orders: "20",
+      ordervalue: "650",
       online: true,
-      date: "24/12/08",
+      date: "23/04/18",
+    },
+    {
+      name: "#1623123421",
+      phone: "9623123421",
+      orders: "12",
+      ordervalue: "480",
+      online: false,
+      date: "23/04/18",
+    },
+    {
+      name: "#1623123421",
+      phone: "7981589112",
+      orders: "10",
+      ordervalue: "500",
+      online: true,
+      date: "23/04/18",
+    },
+    {
+      name: "#1623123421",
+      phone: "9623123421",
+      orders: "16",
+      ordervalue: "850",
+      online: false,
+      date: "23/04/18",
+    },
+    {
+      name: "#1213212342",
+      phone: "8623123421",
+      orders: "30",
+      ordervalue: "250",
+      online: false,
+      date: "19/09/17",
+    },
+    {
+      name: "#1623123421",
+      phone: "7981589112",
+      orders: "20",
+      ordervalue: "650",
+      online: true,
+      date: "23/04/18",
+    },
+    {
+      name: "#1623123421",
+      phone: "9623123421",
+      orders: "12",
+      ordervalue: "480",
+      online: false,
+      date: "23/04/18",
     },
   ];
    
@@ -83,18 +126,18 @@ const UserTable = () => {
           <div className="mb-8 flex items-center justify-between gap-8">
             <div>
               <Typography variant="h5" color="blue-gray">
-                Members list
+                Customers List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
-                See information about all members
+                See information about all the registered customers.
               </Typography>
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
               <Button variant="outlined" size="sm">
-                view stats
+                view insights
               </Button>
               <Button className="flex items-center gap-3" size="sm">
-                <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add member
+                <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add Order
               </Button>
             </div>
           </div>
@@ -141,7 +184,7 @@ const UserTable = () => {
             </thead>
             <tbody>
               {TABLE_ROWS.map(
-                ({ img, name, email, job, org, online, date }, index) => {
+                ({ name, phone, orders, ordervalue, online, date }, index) => {
                   const isLast = index === TABLE_ROWS.length - 1;
                   const classes = isLast
                     ? "p-4"
@@ -151,7 +194,6 @@ const UserTable = () => {
                     <tr key={name}>
                       <td className={classes}>
                         <div className="flex items-center gap-3">
-                          <Avatar src={img} alt={name} size="sm" />
                           <div className="flex flex-col">
                             <Typography
                               variant="small"
@@ -165,7 +207,7 @@ const UserTable = () => {
                               color="blue-gray"
                               className="font-normal opacity-70"
                             >
-                              {email}
+                              Phone: {phone}
                             </Typography>
                           </div>
                         </div>
@@ -177,14 +219,14 @@ const UserTable = () => {
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {job}
+                            No.of Purchases: {orders}
                           </Typography>
                           <Typography
                             variant="small"
                             color="blue-gray"
                             className="font-normal opacity-70"
                           >
-                            {org}
+                            Avg. Order Value: &#8377;{ordervalue}
                           </Typography>
                         </div>
                       </td>
@@ -193,7 +235,7 @@ const UserTable = () => {
                           <Chip
                             variant="ghost"
                             size="sm"
-                            value={online ? "online" : "offline"}
+                            value={online ? "active" : "offline"}
                             color={online ? "green" : "blue-gray"}
                           />
                         </div>

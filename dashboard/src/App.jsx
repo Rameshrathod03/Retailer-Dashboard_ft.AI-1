@@ -19,7 +19,7 @@ const App = () => {
           <Route path="register" element={<Register />} />
         </Route>
         <Route path="/*" element={<Layout />}>
-          <Route path="dashboard" element={<Dashboard />} />
+          {/* <Route path="dashboard" element={<Dashboard />} /> */}
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:customerId" element={<CustomerInfo />} />
         </Route>
