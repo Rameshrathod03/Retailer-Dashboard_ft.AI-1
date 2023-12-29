@@ -10,7 +10,7 @@ import {
 
 const Layout = () => {
     return(
-        <div className="grid-cols-12 flex flex-row flex-nowrap p-4 gap-2 bg-gray-50 bg-[#363636]">
+        <div className="grid-cols-12 flex flex-row flex-nowrap p-4 gap-2  bg-[#363636]">
             <div className="col-span-1 md:col-span-3 lg:col-span-4 relative">
                 <SideBar />
             </div>

@@ -1,4 +1,8 @@
 import React from "react";
+import {  signOut } from "firebase/auth";
+import {auth} from '../../firebase';
+import { useNavigate } from 'react-router-dom';
+
 import {
     Card,
     Typography,
@@ -32,6 +36,18 @@ const Sidebar = () => {
       setOpen(open === value ? 0 : value);
     };
 
+    const navigate = useNavigate();
+ 
+    const handleLogout = () => {               
+        signOut(auth).then(() => {
+        // Sign-out successful.
+            navigate("/");
+            console.log("Signed out successfully")
+        }).catch((error) => {
+        // An error happened.
+        });
+    }
+
     return (
       <Card className="h-[calc(100vh-2rem)] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5">
         <div className="mb-2 p-4">
@@ -46,6 +62,12 @@ const Sidebar = () => {
             </ListItemPrefix>
             Dashboard
           </ListItem></a> */}
+          <a href='/dashboard'><ListItem>
+            <ListItemPrefix>
+              <PresentationChartBarIcon className="h-5 w-5" />
+            </ListItemPrefix>
+            Dashboard
+          </ListItem></a>
           <a href='/customers'><ListItem>
             <ListItemPrefix>
               <UserGroupIcon className="h-5 w-5" />
@@ -88,24 +110,24 @@ const Sidebar = () => {
               </List>
             </AccordionBody>
           </Accordion>
-          <ListItem>
+          <a href='/inventory'><ListItem>
             <ListItemPrefix>
               <ArchiveBoxIcon className="h-5 w-5" />
             </ListItemPrefix>
             Inventory
-          </ListItem>
+          </ListItem></a>
           <ListItem>
             <ListItemPrefix>
               <MagnifyingGlassCircleIcon className="h-5 w-5" />
             </ListItemPrefix>
             Market Analysis
           </ListItem>
-          <a href="/"><ListItem>
+          <ListItem onClick={handleLogout}>
             <ListItemPrefix>
               <PowerIcon className="h-5 w-5" />
             </ListItemPrefix>
             Log Out
-          </ListItem></a>
+          </ListItem>
         </List>
       </Card>
     );
