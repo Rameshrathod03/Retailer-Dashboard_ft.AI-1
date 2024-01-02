@@ -12,8 +12,14 @@ import {
     Input,
     Button,
 } from "@material-tailwind/react";
- 
+
+import React, { useState, useEffect } from 'react';
+
 import { EyeIcon, ArchiveBoxIcon } from "@heroicons/react/24/solid";
+
+import { db, auth, useAuthState } from '../../firebase';
+import { collection, addDoc, setDoc, doc, query, where, getDocs, updateDoc, arrayUnion } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Inventory =() => {
   const data = [
@@ -52,9 +58,37 @@ const Inventory =() => {
     },
   ];
  
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+        const { uid } = auth.currentUser;
+        const categoriesRef = collection(db, "Retailers", uid, "categories");
+        const categoriesSnapshot = await getDocs(categoriesRef);
+        const categoriesData = categoriesSnapshot.docs.map((doc) => doc.data());
+        setCategories(categoriesData);
+    };
+
+    fetchCategories();
+}, []);
+
+const [items, setItems] = useState([]);
+
+useEffect(() => {
+    const fetchItems = async () => {
+        const { uid } = auth.currentUser;
+        const itemsRef = collection(db, "Retailers", uid, "items");
+        const itemsSnapshot = await getDocs(itemsRef);
+        const itemsData = itemsSnapshot.docs.map((doc) => doc.data());
+        setItems(itemsData);
+    };
+
+    fetchItems();
+}, []);
+
   return (
     <div className=" overflow-scroll">
-        <div className="mb-10 flex items-center justify-between gap-8 px-2 pt-1">
+        <div className="mb- flex items-center justify-between gap-8 px-2 pt-1">
                 <div>
                 <Typography variant="h5" color="blue-gray">
                     Inventory Tally
@@ -73,18 +107,56 @@ const Inventory =() => {
                 </div>
         </div>
         
-        <Tabs value="html" orientation="vertical">
-            <TabsHeader className=" w-48">
-                {data.map(({ label, value }) => (
-                <Tab key={value} value={value}>
-                    {label}
+        <Tabs value="html" orientation="vertical" className="mt-12">
+            <TabsHeader className=" w-48 gap-4">
+                <Typography variant="h6" color="blue-gray" className="text-center mt-2">
+                    Categories
+                </Typography>
+                {categories.map((category) => (
+                <Tab key={category.categoryName} value={category.categoryName}>
+                    {category.categoryName}
                 </Tab>
                 ))}
             </TabsHeader>
-            <TabsBody className="">
-                {data.map(({ value, desc }) => (
-                <TabPanel key={value} value={value} className="py-0">
-                    {desc}
+            <TabsBody className=" px-6">
+                {items.map((item) => (
+                <TabPanel key={item.category} value={item.category} className="py-0 col-span-8 flex flex-row gap-4 flex-wrap p-2">
+                    
+                    <div class="mx-auto bg-white shadow-lg w-90 h-50 rounded-2xl hover:cursor-pointer">
+                        <div class="h-40 overflow-hidden p-2">
+                            <img src="https://htmlcolorcodes.com/assets/images/colors/light-blue-color-solid-background-1920x1080.png" alt="" className='rounded-md shadow-sm' />
+                        </div>
+                        <div class=" p-4">
+                            <div class="grid grid-cols-2 gap-4 mt-1 px-6">
+                                <div class="h-8 rounded">
+                                    <Typography variant="h6" color="blue-gray">
+                                        {item.itemName}
+                                    </Typography>
+                                    <Typography variant="p" color="blue-gray">
+                                        {item.itemDescription}
+                                    </Typography>
+                                </div>
+                                <div class="h-8 rounded text-right">
+                                    <Typography variant="p" color="blue-gray">
+                                        In Stock: {item.unitsInInventory}
+                                    </Typography>
+                                    <Typography variant="p" color="blue-gray">
+                                        Id: {item.id}
+                                    </Typography>
+                                </div>
+                                <div class="h-8 rounded mt-4">
+                                    <Button variant="outlined" size="sm">
+                                        edit item
+                                    </Button>
+                                </div>
+                                <div class="h-8 rounded mt-4 text-right">
+                                    <Button size="sm">
+                                        view item
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </TabPanel>
                 ))}
             </TabsBody>
