@@ -34,7 +34,7 @@ import {
     },
   ];
   
-  const TABLE_HEAD = ["Customer", "Stats", "Status", "Latest Purchase", "Details"];
+  const TABLE_HEAD = ["Customer", "Stats", "Latest Purchase", "Details"];
   
   const TABLE_ROWS = [
     {
@@ -42,7 +42,6 @@ import {
       phone: "7981589112",
       orders: "10",
       ordervalue: "500",
-      online: true,
       date: "23/04/18",
     },
     {
@@ -50,7 +49,6 @@ import {
       phone: "9623123421",
       orders: "16",
       ordervalue: "850",
-      online: false,
       date: "23/04/18",
     },
     {
@@ -58,7 +56,6 @@ import {
       phone: "8623123421",
       orders: "30",
       ordervalue: "250",
-      online: false,
       date: "19/09/17",
     },
     {
@@ -66,7 +63,6 @@ import {
       phone: "7981589112",
       orders: "20",
       ordervalue: "650",
-      online: true,
       date: "23/04/18",
     },
     {
@@ -74,7 +70,6 @@ import {
       phone: "9623123421",
       orders: "12",
       ordervalue: "480",
-      online: false,
       date: "23/04/18",
     },
     {
@@ -82,7 +77,6 @@ import {
       phone: "7981589112",
       orders: "10",
       ordervalue: "500",
-      online: true,
       date: "23/04/18",
     },
     {
@@ -90,7 +84,6 @@ import {
       phone: "9623123421",
       orders: "16",
       ordervalue: "850",
-      online: false,
       date: "23/04/18",
     },
     {
@@ -98,7 +91,6 @@ import {
       phone: "8623123421",
       orders: "30",
       ordervalue: "250",
-      online: false,
       date: "19/09/17",
     },
     {
@@ -106,7 +98,6 @@ import {
       phone: "7981589112",
       orders: "20",
       ordervalue: "650",
-      online: true,
       date: "23/04/18",
     },
     {
@@ -114,7 +105,6 @@ import {
       phone: "9623123421",
       orders: "12",
       ordervalue: "480",
-      online: false,
       date: "23/04/18",
     },
   ];
@@ -136,9 +126,9 @@ const UserTable = () => {
               <Button variant="outlined" size="sm">
                 view insights
               </Button>
-              <Button className="flex items-center gap-3" size="sm">
+              <a href="customers/add-order"><Button className="flex items-center gap-3" size="sm">
                 <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add Order
-              </Button>
+              </Button></a>
             </div>
           </div>
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
@@ -184,7 +174,7 @@ const UserTable = () => {
             </thead>
             <tbody>
               {TABLE_ROWS.map(
-                ({ name, phone, orders, ordervalue, online, date }, index) => {
+                ({ name, phone, orders, ordervalue, date }, index) => {
                   const isLast = index === TABLE_ROWS.length - 1;
                   const classes = isLast
                     ? "p-4"
@@ -230,16 +220,7 @@ const UserTable = () => {
                           </Typography>
                         </div>
                       </td>
-                      <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            variant="ghost"
-                            size="sm"
-                            value={online ? "active" : "offline"}
-                            color={online ? "green" : "blue-gray"}
-                          />
-                        </div>
-                      </td>
+                      
                       <td className={classes}>
                         <Typography
                           variant="small"

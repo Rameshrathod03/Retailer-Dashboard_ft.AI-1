@@ -1,5 +1,6 @@
 import {
     Typography,
+    Button,
   } from "@material-tailwind/react";
 
 import BarGraph from "./BarGraph";
@@ -11,6 +12,8 @@ const Dashboard = () => {
             <Typography variant="h3" color="blue-gray">
                 Dashboard
             </Typography>
+            <br />
+            <a href="/profile"><Button>Profile Form</Button></a>
         </div>
     )
 }
