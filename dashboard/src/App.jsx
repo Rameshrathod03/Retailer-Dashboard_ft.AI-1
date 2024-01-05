@@ -15,7 +15,13 @@ import CustomerInfo from "./pages/customers/info";
 
 import Inventory from "./pages/inventory";
 import AddItem from "./pages/inventory/forms/AddItem";
+import EditItem from "./pages/inventory/forms/EditItem";
 import AddCategory from "./pages/inventory/forms/AddCategory";
+import DeleteCategory from "./pages/inventory/forms/DeleteCategory";
+
+import Marketing from "./pages/marketing";
+
+import Market from "./pages/market"
 
 import { AuthContextProvider } from "./firebase";
 
@@ -35,10 +41,14 @@ const App = () => {
             <Route path="profile" element={<ProtectedRoute><ProfileForm /></ProtectedRoute>} />
             <Route path="customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
             <Route path="customers/add-order" element={<ProtectedRoute><AddOrder /></ProtectedRoute>} />
-            <Route path="customers/:customerId" element={<ProtectedRoute><CustomerInfo /></ProtectedRoute>} />
+            <Route path="customers/:phone" element={<ProtectedRoute><CustomerInfo /></ProtectedRoute>} />
             <Route path="inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
             <Route path="add-item" element={<ProtectedRoute><AddItem /></ProtectedRoute>} />
+            <Route path="edit-item/:itemId" element={<ProtectedRoute><EditItem /></ProtectedRoute>} />
             <Route path="add-category" element={<ProtectedRoute><AddCategory /></ProtectedRoute>} />
+            <Route path="delete-category" element={<ProtectedRoute><DeleteCategory /></ProtectedRoute>} />
+            <Route path="marketing" element={<ProtectedRoute><Marketing /></ProtectedRoute>} />
+            <Route path="market-analysis" element={<ProtectedRoute><Market /></ProtectedRoute>} />
           </Route>
           <Route path="/*" element={<Navigate to="/" />} />
         </Routes>

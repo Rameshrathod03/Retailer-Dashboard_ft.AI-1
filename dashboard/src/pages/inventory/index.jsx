@@ -17,46 +17,13 @@ import React, { useState, useEffect } from 'react';
 
 import { EyeIcon, ArchiveBoxIcon } from "@heroicons/react/24/solid";
 
+import Barcode from 'react-barcode';
+
 import { db, auth, useAuthState } from '../../firebase';
 import { collection, addDoc, setDoc, doc, query, where, getDocs, updateDoc, arrayUnion } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 const Inventory =() => {
-  const data = [
-    {
-      label: "HTML",
-      value: "html",
-      desc: `It really matters and then like it really doesn't matter.
-      What matters is the people who are sparked by it. And the people
-      who are like offended by it, it doesn't matter.`,
-    },
-    {
-      label: "React",
-      value: "react",
-      desc: `Because it's about motivating the doers. Because I'm here
-      to follow my dreams and inspire other people to follow their dreams, too.`,
-    },
-    {
-      label: "Vue",
-      value: "vue",
-      desc: `We're not always in the position that we want to be at.
-      We're constantly growing. We're constantly making mistakes. We're
-      constantly trying to express ourselves and actualize our dreams.`,
-    },
-    {
-      label: "Angular",
-      value: "angular",
-      desc: `Because it's about motivating the doers. Because I'm here
-      to follow my dreams and inspire other people to follow their dreams, too.`,
-    },
-    {
-      label: "Svelte",
-      value: "svelte",
-      desc: `We're not always in the position that we want to be at.
-      We're constantly growing. We're constantly making mistakes. We're
-      constantly trying to express ourselves and actualize our dreams.`,
-    },
-  ];
  
   const [categories, setCategories] = useState([]);
 
@@ -86,6 +53,54 @@ useEffect(() => {
     fetchItems();
 }, []);
 
+const downloadPng = async (containerId, name) => {
+    const container = document.getElementById(containerId);
+    if (container) {
+      const svgEl = container.querySelector('svg');
+      if (svgEl) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        
+        const image = new Image();
+        image.onload = () => {
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0);
+          URL.revokeObjectURL(svgUrl);
+          
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = name;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+          }, 'image/png');
+        };
+        image.src = svgUrl;
+      } else {
+        console.error('SVG element not found');
+      }
+    } else {
+      console.error('Container element not found');
+    }
+  };
+  
+  const trimText = (text, maxWordCount) => {
+    const words = text.split(" ");
+    if (words.length > maxWordCount) {
+      return words.slice(0, maxWordCount).join(" ") + "...";
+    }
+    return text;
+  };
+  
+  
+
   return (
     <div className=" overflow-scroll">
         <div className="mb- flex items-center justify-between gap-8 px-2 pt-1">
@@ -108,7 +123,7 @@ useEffect(() => {
         </div>
         
         <Tabs value="html" orientation="vertical" className="mt-12">
-            <TabsHeader className=" w-48 gap-4">
+            <TabsHeader className=" w-48 gap-4 text-center">
                 <Typography variant="h6" color="blue-gray" className="text-center mt-2">
                     Categories
                 </Typography>
@@ -117,23 +132,28 @@ useEffect(() => {
                     {category.categoryName}
                 </Tab>
                 ))}
+                <Tab key="No Category" value="No Category">
+                    No Category
+                </Tab>
+                <a href='/delete-category' className=" mb-2"><Button variant="outlined" size="sm">
+                    Delete Category
+                </Button></a>
             </TabsHeader>
-            <TabsBody className=" px-6">
+            <TabsBody className=" px-4 flex gap-1 flex-wrap">
                 {items.map((item) => (
-                <TabPanel key={item.category} value={item.category} className="py-0 col-span-8 flex flex-row gap-4 flex-wrap p-2">
-                    
-                    <div class="mx-auto bg-white shadow-lg w-90 h-50 rounded-2xl hover:cursor-pointer">
-                        <div class="h-40 overflow-hidden p-2">
-                            <img src="https://htmlcolorcodes.com/assets/images/colors/light-blue-color-solid-background-1920x1080.png" alt="" className='rounded-md shadow-sm' />
+                <TabPanel key={item.category} value={item.category} className="p-2 w-[420px] h-fit">
+                    <div class="mx-auto bg-white shadow-lg rounded-2xl hover:cursor-pointer">
+                        <div className="overflow-hidden p-4 flex justify-center align-middle" id={`barcode-container-${item.id}`}>
+                            <Barcode value={item.id} height="50"/>
                         </div>
-                        <div class=" p-4">
-                            <div class="grid grid-cols-2 gap-4 mt-1 px-6">
-                                <div class="h-8 rounded">
+                        <div class="p-4 h-fit">
+                            <div class="grid grid-cols-2 gap-4 mt-1 px-6 h-30">
+                                <div class="h-8 rounded text-nowrap">
                                     <Typography variant="h6" color="blue-gray">
                                         {item.itemName}
                                     </Typography>
                                     <Typography variant="p" color="blue-gray">
-                                        {item.itemDescription}
+                                        {trimText(item.itemDescription, 4)} {/* Adjust the number of words as needed */}
                                     </Typography>
                                 </div>
                                 <div class="h-8 rounded text-right">
@@ -141,18 +161,22 @@ useEffect(() => {
                                         In Stock: {item.unitsInInventory}
                                     </Typography>
                                     <Typography variant="p" color="blue-gray">
-                                        Id: {item.id}
+                                        Price: Rs {item.price}
                                     </Typography>
                                 </div>
                                 <div class="h-8 rounded mt-4">
-                                    <Button variant="outlined" size="sm">
-                                        edit item
-                                    </Button>
+                                <Button 
+                                    variant="outlined" 
+                                    size="sm" 
+                                    onClick={() => downloadPng(`barcode-container-${item.id}`, `${item.itemName}.png`)}
+                                >
+                                    Download
+                                </Button>
                                 </div>
                                 <div class="h-8 rounded mt-4 text-right">
-                                    <Button size="sm">
-                                        view item
-                                    </Button>
+                                    <a href={`/edit-item/${item.id}`}><Button size="sm">
+                                        edit item
+                                    </Button></a>
                                 </div>
                             </div>
                         </div>

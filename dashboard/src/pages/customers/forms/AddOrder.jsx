@@ -3,34 +3,18 @@ import { Dialog, Popover, RadioGroup, Tab, Transition } from '@headlessui/react'
 import { Bars3Icon, QuestionMarkCircleIcon, MagnifyingGlassIcon, ShoppingBagIcon, XCircleIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon, TrashIcon } from '@heroicons/react/24/solid'
 
+import { useNavigate } from 'react-router-dom';
+
 import {
   Typography,
   Button,
 } from '@material-tailwind/react';
 
-const products = [
-  {
-    id: 1,
-    title: 'Basic Tee',
-    href: '#',
-    price: '$32.00',
-    color: 'Black',
-    size: 'Large',
-    imageSrc: 'https://tailwindui.com/img/ecommerce-images/checkout-page-02-product-01.jpg',
-    imageAlt: "Front of men's Basic Tee in black.",
-  },
-  {
-    id: 1,
-    title: 'Basic Tee',
-    href: '#',
-    price: '$32.00',
-    color: 'Black',
-    size: 'Large',
-    imageSrc: 'https://tailwindui.com/img/ecommerce-images/checkout-page-02-product-02.jpg',
-    imageAlt: "Front of men's Basic Tee in black.",
-  },
-  
-]
+import { db, auth } from '../../../firebase'; // Import your Firebase configuration
+import { collection, getDocs, query, where, addDoc } from "firebase/firestore";
+
+import ItemModal from './ItemModal';
+
 const deliveryMethods = [
   { id: 1, title: 'Standard', turnaround: '4–10 business days', price: '$5.00' },
   { id: 2, title: 'Express', turnaround: '2–5 business days', price: '$16.00' },
@@ -72,15 +56,178 @@ function classNames(...classes) {
 }
 
 export default function Example() {
-  const [open, setOpen] = useState(false)
-  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(deliveryMethods[0])
+  const [open, setOpen] = useState(false);
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(deliveryMethods[0]);
+  const [userVerified, setUserVerified] = useState(false);
+  const [newUser, setNewUser] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemIdInput, setItemIdInput] = useState("");
+  const [orderProducts, setOrderProducts] = useState([]); // Initialize with existing products
+
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [gender, setGender] = useState('');
+
+  const navigate = useNavigate();
+
+  const handleDeleteProduct = (productId) => {
+    // Filter out the product with the specified ID
+    const updatedProducts = orderProducts.filter((product) => product.id !== productId);
+    // Update the state to reflect the changes
+    setOrderProducts(updatedProducts);
+  };
 
   const now = new Date();
   const date = now.toISOString().substring(0, 10); 
-  // const time = now.toTimeString().substring(0, 5);
   const hours = now.getHours().toString().padStart(2, '0');
   const minutes = now.getMinutes().toString().padStart(2, '0');
   const time = `${hours}:${minutes}`;
+
+  const verifyUser = async (phone) => {
+    const customersRef = collection(db, "Retailers", auth.currentUser.uid, "customers");
+    const q = query(customersRef, where("phone", "==", phone));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      setUserVerified(true);
+      setNewUser(false);
+    } else {
+      setUserVerified(false);
+      setNewUser(true);
+    }
+  };
+
+  const handleAddItem = async (itemId) => {
+    if (!itemId) return; // Exit if no item ID is provided
+  
+    // Query Firestore for the item
+    const itemsRef = collection(db, "Retailers", auth.currentUser.uid, "items");
+    const q = query(itemsRef, where("id", "==", itemId));
+    const querySnapshot = await getDocs(q);
+  
+    if (!querySnapshot.empty) {
+      const itemData = querySnapshot.docs[0].data();
+
+      // Check if the item is already in the orderProducts state
+      const existingItemIndex = orderProducts.findIndex((item) => item.id === itemData.id);
+
+      if (existingItemIndex !== -1) {
+        // If the item already exists, update its quantity
+        const updatedOrderProducts = [...orderProducts];
+        updatedOrderProducts[existingItemIndex].quantity += 1;
+
+        setOrderProducts(updatedOrderProducts);
+      } else {
+        // If the item doesn't exist, add it to the orderProducts state
+        const newItem = {
+          id: itemData.id,
+          title: itemData.itemName,
+          price: itemData.price,
+          quantity: 1, // Initialize quantity to 1 for new items
+        };
+
+      // Add the item to the orderProducts state
+      setOrderProducts((prevProducts) => [...prevProducts, newItem]);
+      }
+    } else {
+      // Handle the case where the item is not found
+      console.log("Item not found");
+    }
+  
+    setIsModalOpen(false); // Close modal after processing
+  };
+
+  const calculateTotal = () => {
+    return orderProducts.reduce((total, product) => {
+      // Assuming product.price is a string like 'Rs. 100', extract the numeric part
+      const price = parseFloat(product.price.replace(/[^0-9.-]+/g, ""));
+      return total + (price * product.quantity);
+    }, 0);
+  };  
+
+  const handleQuantityChange = (productId, newQuantity) => {
+    // Convert newQuantity to an integer
+    newQuantity = parseInt(newQuantity);
+  
+    setOrderProducts(currentProducts => {
+      // If the new quantity is 0, filter out the product
+      if (newQuantity === 0) {
+        return currentProducts.filter(product => product.id !== productId);
+      } else {
+        // Otherwise, update the quantity of the product
+        return currentProducts.map(product =>
+          product.id === productId ? { ...product, quantity: newQuantity } : product
+        );
+      }
+    });
+  };
+
+  const feedbackOptions = [
+    { value: 'Whatsapp', label: 'Whatsapp' },
+    { value: 'Message', label: 'Message' },
+    { value: 'Email', label: 'Email' },
+    { value: 'Word of Mouth', label: 'Word of Mouth' },
+    { value: 'None', label: 'None' },
+  ];
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+  
+    // Create customer data object
+    const customerData = {
+      phone: phoneNumber,
+      email,
+      name,
+      gender
+    };
+  
+    // Meta information data
+    const metaInfo = {
+      date: date, // or use new Date().toISOString().substring(0, 10) if you want the current date
+      time: time  // or use `${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}` for current time
+    };
+  
+    // Reference to the customers collection
+    const customersRef = collection(db, "Retailers", auth.currentUser.uid, "customers");
+  
+    // Check if the user is new or existing
+    if (newUser) {
+      // Add the new customer
+      const newCustomerRef = await addDoc(customersRef, customerData);
+  
+      // Create a purchase record under this new customer
+      const purchaseRef = collection(newCustomerRef, "purchases");
+      await addDoc(purchaseRef, {
+        orderProducts,
+        total: calculateTotal(),
+        metaInfo,
+        feedback: document.getElementById("feedback").value,
+      });
+    } else {
+      // Find existing customer
+      const q = query(customersRef, where("phone", "==", phoneNumber));
+      const querySnapshot = await getDocs(q);
+      const existingCustomerRef = querySnapshot.docs[0].ref;
+  
+      // Add purchase to existing customer's purchases
+      const purchaseRef = collection(existingCustomerRef, "purchases");
+      await addDoc(purchaseRef, {
+        orderProducts,
+        total: calculateTotal(),
+        metaInfo,
+        feedback: document.getElementById("feedback").value,
+      });
+    }
+
+    // Show a success message
+  alert('Order placed successfully!');
+
+  // Redirect to another page, e.g., order summary or home page
+  navigate('/customers');
+
+  };  
 
   return (
     <div className=' overflow-scroll'>
@@ -91,7 +238,7 @@ export default function Example() {
         <div className="max-w-2xl mx-auto lg:max-w-none">
           <h1 className="sr-only">Checkout</h1>
 
-          <form className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
+          <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
             <div>
               <div>
                 <h2 className="text-lg font-medium text-gray-900">User Information</h2>
@@ -105,11 +252,68 @@ export default function Example() {
                         type="text"
                         name="phone"
                         id="phone"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
                         autoComplete="tel"
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        required
                       />
                     </div>
+                    <Button className=' mt-2' variant='outlined' size='sm' onClick={() => verifyUser(document.getElementById("phone").value)}>
+                      Check
+                    </Button>
                 </div>
+
+                {newUser && (
+                  <div>
+                    <div className="mt-4">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
+                        required
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
+                        required
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                        Gender
+                      </label>
+                      <select
+                        name="gender"
+                        id="gender"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        className="block w-full border-gray-300 rounded-md shadow-sm sm:text-sm"
+                        required
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-10 border-t border-gray-200 pt-10">
@@ -117,14 +321,14 @@ export default function Example() {
 
                 <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                   <div>
-                    <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="purchase-date" className="block text-sm font-medium text-gray-700">
                       Date
                     </label>
                     <div className="mt-1">
                       <input
                         type="date"
-                        id="first-name"
-                        name="first-name"
+                        id="purchase-date"
+                        name="purchase-date"
                         autoComplete="given-name"
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         defaultValue={date}
@@ -134,14 +338,14 @@ export default function Example() {
                   </div>
 
                   <div>
-                    <label htmlFor="last-name" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="purchase-time" className="block text-sm font-medium text-gray-700">
                       Time
                     </label>
                     <div className="mt-1">
                       <input
                         type="time"
-                        id="last-name"
-                        name="last-name"
+                        id="purchase-time"
+                        name="purchase-time"
                         autoComplete="family-name"
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         defaultValue={time}
@@ -149,6 +353,31 @@ export default function Example() {
                       />
                     </div>
                   </div>
+
+                  <div className="mt-4">
+                    <label htmlFor="feedback" className="block text-sm font-medium text-gray-700">
+                      Reach
+                    </label>
+                    <div className="mt-1">
+                      <select
+                        id="feedback"
+                        name="feedback"
+                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        defaultValue=""
+                        required
+                      >
+                         <option value="" disabled>
+                          Select an option
+                         </option>
+                        {feedbackOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
 
                   {/* <div className="sm:col-span-2">
                     <label htmlFor="company" className="block text-sm font-medium text-gray-700">
@@ -274,7 +503,7 @@ export default function Example() {
               </div>
 
               {/* Payment */}
-              <div className="mt-10 border-t border-gray-200 pt-10">
+              {/* <div className="mt-10 border-t border-gray-200 pt-10">
                 <h2 className="text-lg font-medium text-gray-900">Feedback</h2>
 
                 <fieldset className="mt-4">
@@ -307,7 +536,7 @@ export default function Example() {
                   </div>
                 </fieldset>
 
-                {/* <div className="mt-6 grid grid-cols-4 gap-y-6 gap-x-4">
+                <div className="mt-6 grid grid-cols-4 gap-y-6 gap-x-4">
                   <div className="col-span-4">
                     <label htmlFor="card-number" className="block text-sm font-medium text-gray-700">
                       Card number
@@ -367,8 +596,8 @@ export default function Example() {
                       />
                     </div>
                   </div>
-                </div> */}
-              </div>
+                </div>
+              </div> */}
 
               {/* <div className="mt-10 border-t border-gray-200 pt-10">
                 <RadioGroup value={selectedDeliveryMethod} onChange={setSelectedDeliveryMethod}>
@@ -433,7 +662,59 @@ export default function Example() {
               <div className="mt-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <h3 className="sr-only">Items in your cart</h3>
                 <ul role="list" className="divide-y divide-gray-200">
-                  {products.map((product) => (
+                {orderProducts.length > 0 ? (
+            <ul role="list" className="divide-y divide-gray-200">
+              {orderProducts.map((product, index) => (
+                
+                  <li key={index} className="flex py-6 px-4 sm:px-6">
+                      <div className="ml-6 flex-1 flex flex-col">
+                        <div className="flex">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800">
+                              {product.title}
+                            </h4>
+                            {/* <p className="mt-1 text-sm text-gray-500"></p> */}
+                          </div>
+
+                          <div className="ml-4 flex-shrink-0 flow-root">
+                            <button
+                              type="button"
+                              className="-m-2.5 bg-white p-2.5 flex items-center justify-center text-gray-400 hover:text-gray-500"
+                              onClick={() => handleDeleteProduct(product.id)}
+                            >
+                              <span className="sr-only">Remove</span>
+                              <TrashIcon className="h-5 w-5" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 pt-2 flex items-end justify-between">
+                          <p className="mt-1 text-sm font-medium text-gray-900">Rs. {product.price}</p>
+
+                          <div className="ml-4">
+                            <label htmlFor={`quantity-${product.id}`} className="sr-only">
+                              Quantity
+                            </label>
+                            <input
+                              id={`quantity-${product.id}`}
+                              type="number"
+                              name="quantity"
+                              value={product.quantity}
+                              onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                              className=" w-20 rounded-md border border-gray-300 text-base font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm text-gray-500">No items added yet.</p>
+            </div>
+          )}
+                  {/* {products.map((product) => (
                     <li key={product.id} className="flex py-6 px-4 sm:px-6">
                       <div className="flex-shrink-0">
                         <img src={product.imageSrc} alt={product.imageAlt} className="w-20 rounded-md" />
@@ -480,25 +761,34 @@ export default function Example() {
                         </div>
                       </div>
                     </li>
-                  ))}
+                  ))} */}
                 </ul>
                 <div className="flex shrink-0 gap-2 sm:flex-row w-full p-4">
-                  <Button variant="outlined" size="sm">
-                    Add Items
-                  </Button>
+                <Button variant="outlined" size="sm" onClick={() => setIsModalOpen(true)}>
+                  Add Items
+                </Button>
+
+                <ItemModal 
+                  isOpen={isModalOpen} 
+                  onClose={() => setIsModalOpen(false)} 
+                  onAdd={handleAddItem}
+                />
+
                 </div>
                 <dl className="border-t border-gray-200 py-6 px-4 space-y-6 sm:px-6">
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <dt className="text-sm">Subtotal</dt>
                     <dd className="text-sm font-medium text-gray-900">$64.00</dd>
                   </div>
                   <div className="flex items-center justify-between">
                     <dt className="text-sm">Taxes</dt>
                     <dd className="text-sm font-medium text-gray-900">$5.52</dd>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+                  </div> */}
+                  <div className="flex items-center justify-between pt-2">
                     <dt className="text-base font-medium">Total</dt>
-                    <dd className="text-base font-medium text-gray-900">$75.52</dd>
+                    <dd className="text-sm font-medium text-gray-900">
+                      Rs. {calculateTotal().toFixed(2)}
+                    </dd>
                   </div>
                 </dl>
 

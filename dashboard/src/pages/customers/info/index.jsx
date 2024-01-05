@@ -1,5 +1,8 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { useParams } from "react-router-dom";
+
+import { db, auth } from '../../../firebase'; // Adjust the import path as needed
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import { 
     Avatar,
@@ -113,7 +116,45 @@ const chartConfig = {
   };  
 
 const CustomerInfo = () => {
-    const { customerId } = useParams();
+    const { phone } = useParams();
+    const [customer, setCustomer] = useState(null);
+    const [purchases, setPurchases] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const fetchCustomerData = async () => {
+        try {
+          const customerQuery = query(collection(db, 'Retailers', auth.currentUser.uid, 'customers'), where('phone', '==', phone));
+          const customerSnapshot = await getDocs(customerQuery);
+          if (!customerSnapshot.empty) {
+            const customerData = customerSnapshot.docs[0].data();
+            const customerId = customerSnapshot.docs[0].id;
+            setCustomer(customerData);
+  
+            // Fetch purchases for this customer
+            const purchasesQuery = query(collection(db, 'Retailers', auth.currentUser.uid, 'customers', customerId, 'purchases'));
+            const purchasesSnapshot = await getDocs(purchasesQuery);
+            const purchasesData = purchasesSnapshot.docs.map(doc => doc.data());
+            setPurchases(purchasesData);
+          } else {
+            console.log('No customer found with phone number:', phone);
+          }
+        } catch (error) {
+          console.error('Error fetching customer data:', error);
+        }
+        setLoading(false);
+      };
+  
+      fetchCustomerData();
+    }, [phone]);
+  
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+  
+    if (!customer) {
+      return <div>No customer data found.</div>;
+    }
 
     return (
         <div className="flex flex-row justify-evenly w-full grid-cols-12 flex-wrap overflow-scroll">
@@ -122,17 +163,17 @@ const CustomerInfo = () => {
                     <Card className="flex flex-row w-fit p-4 gap-6 align-middle flex-wrap">
                         <Avatar src="https://docs.material-tailwind.com/img/face-1.jpg" alt="avatar" size="xxl" />
                         <div className="flex flex-col gap-1">
-                            <Typography variant="h6" color="blue-gray">#144121234</Typography>
-                            <Typography variant="p" color="gray">9981333321</Typography>
-                            <Typography variant="p" color="gray">user.email@gmail.com</Typography>
-                            <Rating value={4} readonly/>
+                            <Typography variant="h6" color="blue-gray">{customer.name}</Typography>
+                            <Typography variant="p" color="gray">{customer.phone}</Typography>
+                            <Typography variant="p" color="gray">{customer.email}</Typography>
+                            {/* <Rating value={4} readonly/> */}
                         </div>
                     </Card>
                     <Card className="flex flex-row w-fit p-4 gap-6 align-middle flex-wrap">
                         <div className="flex flex-col gap-1">
                             <Typography variant="h6" color="blue-gray">Stats:</Typography>
-                            <Typography variant="p" color="gray">Total Orders: 24</Typography>
-                            <Typography variant="p" color="gray">Avg. Order Value: &#8377; 360</Typography>
+                            <Typography variant="p" color="gray">Total Orders: {purchases.length}</Typography>
+                            <Typography variant="p" color="gray">Avg. Order Value: &#8377; 350</Typography>
                             <Typography variant="p" color="gray">Max Order Value: &#8377; 670</Typography>
                         </div>
                     </Card>
@@ -248,7 +289,7 @@ const CustomerInfo = () => {
                   <Card className="p-4">
                     <Typography variant="h6" color="blue-gray" className="p-2">Recent Purchases</Typography>
                     <Carousel className="rounded-xl">
-                      <Card className="h-full w-full object-cover bg-[#343845] px-6">
+                      <Card className="h-[270px] w-[360px] object-cover bg-[#343845] px-6">
                         <CardBody className="m-auto">
                           <Typography variant="h6" color="white">
                             Order #1234
@@ -273,16 +314,6 @@ const CustomerInfo = () => {
                           </ul>
                         </CardBody>
                       </Card>
-                      <img
-                        src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"
-                        alt="image 2"
-                        className="h-full w-full object-cover"
-                      />
-                      <img
-                        src="https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2762&q=80"
-                        alt="image 3"
-                        className="h-full w-full object-cover"
-                      />
                     </Carousel>
                   </Card>
                 </div>
