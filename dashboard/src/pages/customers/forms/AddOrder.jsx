@@ -11,7 +11,7 @@ import {
 } from '@material-tailwind/react';
 
 import { db, auth } from '../../../firebase'; // Import your Firebase configuration
-import { collection, getDocs, query, where, addDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, addDoc, doc, setDoc } from "firebase/firestore";
 
 import ItemModal from './ItemModal';
 
@@ -206,6 +206,18 @@ export default function Example() {
         metaInfo,
         reach: document.getElementById("feedback").value,
       });
+
+      // Reference to the marketing collection
+      const marketingRef = collection(db, `Retailers/${auth.currentUser.uid}/marketing`);
+
+      // Create a new marketing document for the new customer
+      const marketingDocRef = doc(marketingRef, customerData.phone);
+      await setDoc(marketingDocRef, {
+        email: customerData.email,
+        phone: customerData.phone,
+        Marketing: {} // Initialize Marketing map as an empty object
+      });
+
     } else {
       // Find existing customer
       const q = query(customersRef, where("phone", "==", phoneNumber));
@@ -220,6 +232,30 @@ export default function Example() {
         metaInfo,
         feedback: document.getElementById("feedback").value,
       });
+    }
+
+    // Get the user's access token
+    const accessToken = await auth.currentUser.getIdToken();
+    const uid = auth.currentUser.uid;
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/generateContent/?phone=${phoneNumber}&accessToken=${accessToken}&uid=${uid}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Response data:', data);
+      } else {
+        console.error('Failed to fetch data');
+        // Handle the error appropriately
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Handle the error appropriately
     }
 
     // Show a success message

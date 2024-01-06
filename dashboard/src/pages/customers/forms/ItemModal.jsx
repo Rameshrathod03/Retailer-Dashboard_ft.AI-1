@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import BarcodeScannerComponent from "react-qr-barcode-scanner";
 
 import {
   Typography,
@@ -46,7 +47,14 @@ const ItemModal = ({ isOpen, onClose, onAdd }) => {
                   Add Item
                 </Dialog.Title>
                 <div className="mt-2">
-                  
+                  <BarcodeScannerComponent
+                    width={500}
+                    height={500}
+                    onUpdate={(err, result) => {
+                      if (result) setItemIdInput(result.text);
+                      else setItemIdInput("");
+                    }}
+                  />
                   <input
                     type="text"
                     value={itemIdInput}
