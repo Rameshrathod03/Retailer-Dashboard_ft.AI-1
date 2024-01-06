@@ -5710,6 +5710,18 @@ expect@^29.0.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
+expo-barcode-scanner@*:
+  version "12.7.0"
+  resolved "https://registry.yarnpkg.com/expo-barcode-scanner/-/expo-barcode-scanner-12.7.0.tgz#c96bdf12e53468eab78c45533abd9e0ebe6ac23c"
+  integrity sha512-HTy5mRHRtOM/3xrVXN9wUBIQGXLdvqGgHkrSxgvJzqLQBjafq+uEiUxTPRyvNofWt3gMZXcy8ZqqW7gaD3xXDg==
+  dependencies:
+    expo-image-loader "~4.4.0"
+
+expo-image-loader@~4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/expo-image-loader/-/expo-image-loader-4.4.0.tgz#35909516311aa60fa4bf35aa6eb7624d7f7f788d"
+  integrity sha512-dq88tiRB8aB1U+O/oJI7IY4VU9Nu2iDjEwR8QDfLtD4xWd5lNGoyic5Vh7911E1qNJFqNMSVIVzOD5l1SQ3A6g==
+
 express@^4.17.3:
   version "4.18.2"
   resolved "https://registry.npmjs.org/express/-/express-4.18.2.tgz"
@@ -9699,6 +9711,13 @@ react-is@^18.0.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react-is/-/react-is-18.2.0.tgz"
   integrity sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==
+
+react-native-web-barcode-scanner@^0.0.0-alpha.1:
+  version "0.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/react-native-web-barcode-scanner/-/react-native-web-barcode-scanner-0.0.0-alpha.1.tgz#2a9d70ef8d9b2293d01d238f942d54d3e9cf6c3e"
+  integrity sha512-FWBE3rRZ/VnLPCbpkUshy1GfXrJMCQbIagj1I+ccKtOGAmeZ8OlRnggBF8tmQQM4pG1rbPHnTeJG25qLB1UmQw==
+  dependencies:
+    expo-barcode-scanner "*"
 
 react-qr-barcode-scanner@^1.0.6:
   version "1.0.6"

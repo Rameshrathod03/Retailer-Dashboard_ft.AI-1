@@ -23,6 +23,7 @@ import {
     MegaphoneIcon,
     PowerIcon,
     ShoppingBagIcon,
+    UserCircleIcon,
   } from "@heroicons/react/24/solid";
    
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
@@ -62,11 +63,11 @@ const Sidebar = () => {
             </ListItemPrefix>
             Dashboard
           </ListItem></a> */}
-          <a href='/dashboard'><ListItem>
+          <a href='/profile'><ListItem>
             <ListItemPrefix>
-              <PresentationChartBarIcon className="h-5 w-5" />
+              <UserCircleIcon className="h-5 w-5" />
             </ListItemPrefix>
-            Dashboard
+            Profile
           </ListItem></a>
           <a href='/customers'><ListItem>
             <ListItemPrefix>

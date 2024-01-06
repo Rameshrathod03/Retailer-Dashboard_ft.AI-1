@@ -21,8 +21,9 @@ const Login = () => {
       .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          navigate("/dashboard")
-          console.log(user);
+          navigate("/customers")
+
+          localStorage.setItem('accessToken', user.accessToken);
       })
       .catch((error) => {
           const errorCode = error.code;

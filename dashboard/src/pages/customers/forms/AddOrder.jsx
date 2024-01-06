@@ -125,6 +125,7 @@ export default function Example() {
           id: itemData.id,
           title: itemData.itemName,
           price: itemData.price,
+          category: itemData.category,
           quantity: 1, // Initialize quantity to 1 for new items
         };
 
@@ -203,7 +204,7 @@ export default function Example() {
         orderProducts,
         total: calculateTotal(),
         metaInfo,
-        feedback: document.getElementById("feedback").value,
+        reach: document.getElementById("feedback").value,
       });
     } else {
       // Find existing customer

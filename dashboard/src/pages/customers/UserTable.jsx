@@ -138,9 +138,9 @@ const UserTable = () => {
               </Typography>
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <Button variant="outlined" size="sm">
+              {/* <Button variant="outlined" size="sm">
                 view insights
-              </Button>
+              </Button> */}
               <a href="customers/add-order"><Button className="flex items-center gap-3" size="sm">
                 <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add Order
               </Button></a>
