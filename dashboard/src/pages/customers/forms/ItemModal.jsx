@@ -16,6 +16,13 @@ const ItemModal = ({ isOpen, onClose, onAdd }) => {
     }
   }, [isOpen]);
 
+  const handleScanResult = (err, result) => {
+    if (result) {
+      onAdd(result.text); // Automatically add the item when scanned
+      onClose(); // Optionally close the modal after adding
+    }
+  };
+
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -50,10 +57,7 @@ const ItemModal = ({ isOpen, onClose, onAdd }) => {
                   <BarcodeScannerComponent
                     width={500}
                     height={500}
-                    onUpdate={(err, result) => {
-                      if (result) setItemIdInput(result.text);
-                      else setItemIdInput("");
-                    }}
+                    onUpdate={handleScanResult}
                   />
                   <input
                     type="text"
@@ -67,7 +71,7 @@ const ItemModal = ({ isOpen, onClose, onAdd }) => {
                   <Button 
                     variant="outlined" 
                     size="sm" 
-                    onClick={() => onAdd(itemIdInput)}
+                    onClick={() => {onAdd(itemIdInput); onClose();}}
                   >
                     Add to Order
                   </Button>

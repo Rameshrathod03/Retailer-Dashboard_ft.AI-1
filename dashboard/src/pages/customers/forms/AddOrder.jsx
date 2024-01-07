@@ -11,7 +11,7 @@ import {
 } from '@material-tailwind/react';
 
 import { db, auth } from '../../../firebase'; // Import your Firebase configuration
-import { collection, getDocs, query, where, addDoc, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, addDoc, doc, setDoc, updateDoc } from "firebase/firestore";
 
 import ItemModal from './ItemModal';
 
@@ -232,6 +232,33 @@ export default function Example() {
         metaInfo,
         feedback: document.getElementById("feedback").value,
       });
+    }
+
+    for (const product of orderProducts) {
+      // Query Firestore for the item with the matching id
+      const itemsRef = collection(db, `Retailers/${auth.currentUser.uid}/items`);
+      const q = query(itemsRef, where("id", "==", product.id));
+      const querySnapshot = await getDocs(q);
+    
+      if (!querySnapshot.empty) {
+        const itemDoc = querySnapshot.docs[0]; // Assuming there's only one document with this id
+        const itemRef = itemDoc.ref;
+        const currentItemData = itemDoc.data();
+        const currentInventory = parseInt(currentItemData.unitsInInventory, 10);
+        const purchasedQuantity = parseInt(product.quantity, 10);
+        const updatedInventory = currentInventory - purchasedQuantity;
+    
+        if (updatedInventory >= 0) {
+          await updateDoc(itemRef, { unitsInInventory: updatedInventory.toString() });
+        } else {
+          // Handle cases where inventory would go negative
+          console.error(`Not enough inventory for item ID ${product.id}`);
+          // Optionally, throw an error or alert the user
+        }
+      } else {
+        console.error(`Item not found with ID ${product.id}`);
+        // Handle the case where the item is not found in Firestore
+      }
     }
 
     // Get the user's access token
