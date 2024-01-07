@@ -121,7 +121,7 @@ const Marketing = () => {
     return text.substring(0, limit) + '...';
   };
 
-  return <div>
+  return <div className=" overflow-scroll">
     <div class="m-6 overflow-scroll">
       <div class="flex flex-wrap -mx-6">
             <div class="w-full px-6 sm:w-1/2 xl:w-1/3">
