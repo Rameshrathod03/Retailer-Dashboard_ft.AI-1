@@ -122,7 +122,7 @@ const Marketing = () => {
   };
 
   return <div>
-    <div class="m-6">
+    <div class="m-6 overflow-scroll">
       <div class="flex flex-wrap -mx-6">
             <div class="w-full px-6 sm:w-1/2 xl:w-1/3">
                 <div class="flex items-center px-5 py-6 shadow-md rounded-lg bg-slate-100">
