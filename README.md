@@ -1,5 +1,6 @@
 # AI Powered Retailer Dashboard
 
+
 Welcome to the future of retail management with our AI-powered Retailer Dashboard. This innovative solution, built on the foundation of Django backend, Firebase database, and OpenAI API, offers retailers a comprehensive toolkit. Efficiently manage inventory, delve into customer analytics, and execute targeted marketing campaigns with ease. The AI capabilities embedded in the system provide invaluable market trend analysis, enabling retailers to make data-driven decisions for optimal restocking strategies. Experience the synergy of technology and retail expertise in one powerful platform.
 
 View the project deployment here: https://easyretail.vercel.app/
